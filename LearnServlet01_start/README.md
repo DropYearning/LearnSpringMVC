@@ -50,10 +50,10 @@ servlet是运行在 Web 服务器中的小型Java程序（即：服务器端的�
     ![ftxaAP1](https://i.imgur.com/ftxaAP1.png)
 - 解决：[IntelliJ IDEA 出现" java: 程序包javax.servlet不存在、 java: 程序包javax.servlet.annotation"等错误 - 缘琪梦 - 博客园](https://www.cnblogs.com/Yimi/p/11978315.html)
 
-## 2.2 servlet执行过程
+### 2.2 servlet执行过程
 - ![8XXDGR3](https://i.imgur.com/8XXDGR3.png)
 
-## 2.3 servlet的生命周期
+### 2.3 servlet的生命周期
 - 四个阶段：实例化(new)-->初始化(init)-->服务(service)->销毁(destroy)
 - 出生：（实例化-->初始化）**第一次访问Servlet就实例化了（默认情况下）**
 - 活着：（服务）**应用(服务器不关闭，应用不卸载)活着，servlet就活着**
