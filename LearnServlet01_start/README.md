@@ -20,6 +20,7 @@ servlet是运行在 Web 服务器中的小型Java程序（即：服务器端的�
 
 ### 2.1 编写一个servlet程序
 - a、写一个java类，实现servlet接口，需要实现接口下面的五个方法【init(), destroy(), getServletInfo(), ServletConfig(), service(...)】.[可以把实现了servlet接口的类看作是一个servlet小程序]
+    
     - 其实service()是服务方法，向模板页面发送数据
     
 - b、修改web.xml文件，给servlet提供一个可访问的URI地址
@@ -270,15 +271,23 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response) t
 }
 ```
 
+## 5 一个典型的servlet在Tomcat上运行的生命周期
+
+  1. Tomcat receives a request from a client through one of its connectors.
+  2. Tomcat maps this request to the appropriate Engine for processing.  These Engines are contained within other elements, such as Hosts and Servers, which limit the scope of Tomcat's search for the correct Engine.
+  3. Once the request has been mapped to the appropriate servlet, Tomcat checks to see if that servlet class has been loaded.  If it has not, Tomcat compiles the servlet into Java bytecode, which is executable by the JVM, and creates an instance of the servlet.
+  4. Tomcat initializes the servlet by calling its **init** method.  The servlet includes code that is able to read Tomcat configuration files and act accordingly, as well as declare any resources it might need, so that Tomcat can create them in an orderly, managed fashion.
+  5. Once the servlet has been initialized, Tomcat can call the servlet's **service** method to process the request, which will be returned as a response.
+  6. During the servlet's lifecycle, Tomcat and the servlet can communicate through the use of **listener classes**, which monitor the servlet for a variety of state changes.  Tomcat can retrieve and store these state changes in a variety of ways, and allow other servlets access to them, allowing state to be maintained and accessed by various components of a given context across the span of a single or multiple user sessions.  An example of this functionality in action is an e-commerce application that remembers what the user has added to their cart and is able to pass this data to a checkout process.
+  7. Tomcat calls the servlet's **destroy** method to smoothly remove the servlet.  This action is triggered either by a state change that is being listened for, or by an external command delivered to Tomcat to undeploy the servlet's Context or shut down the server.
 
 ## 参考资料
+
 - [Java Web 学习与总结（一）Servlet基础 - 真是啰嗦 - 博客园](https://www.cnblogs.com/qq965921539/p/10161340.html)
 - [Servlet的多线程和线程安全 - 邴越 - 博客园](https://www.cnblogs.com/binyue/p/4513577.html)
 - [深入理解Servlet线程安全问题_Java_LCore的专栏-CSDN博客](https://blog.csdn.net/lcore/article/details/8974590)
 
-
-
-
+- [An introduction to Tomcat servlet interactions | MuleSoft](https://www.mulesoft.com/tcat/tomcat-servlet)
 
 
 
