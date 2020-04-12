@@ -15,7 +15,7 @@ public class HelloController {
         return "success"; // 默认指明了返回到的jsp文件名字（返回到success.jsp）
     }
 
-    @RequestMapping(path = "/testRequestMapping", params = {"username"},method = {RequestMethod.GET, RequestMethod.POST})
+    @RequestMapping(path = "/testRequestMapping",method = {RequestMethod.GET, RequestMethod.POST})
         // http://localhost:8080/start/proj1/testRequestMapping?username=1
     public String testRequestMapping(){
         System.out.println("测试RequestMapping注解");

@@ -201,4 +201,178 @@ class="org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolv
     — headers：用于指定限制请求消息头的条件，请求头中必须含有某些字段
 
 ## 8 请求参数的绑定
-- 
+- 基本类型参数：包括基本类型和 String 类型
+    - 要求我们的参数名称必须和控制器中方法的形参名称保持一致。(严格区分大小写)
+- POJO(JavaBeans)类型参数：包括实体类，以及关联的实体类
+    - 要求表单中参数名称和POJO类的属性名称保持一致。并且控制器方法的参数类型是POJO类型。
+- 数组和集合类型参数：包括 List 结构和 Map 结构的集合（包括数组）
+    - 如果是集合类型,有两种方式：
+        - 第一种：要求集合类型的请求参数必须在 POJO 中。在表单中请求参数名称要和 POJO 中集合属性名称相同。给 List 集合中的元素赋值，使用下标。给 Map 集合中的元素赋值，使用键值对。
+        - 第二种：**接收的请求参数是 json 格式数据。需要借助一个注解实现。**
+- SpringMVC会自动进行一些数据的类型转换。对于不常用的数据类型转换需要自己指定。
+
+
+### 8.1 在处理请求的方法中增加参数
+- 直接在Controller类中处理映射的方法的参数中增加参数即可：
+    ![XBD1BiZ](https://i.imgur.com/XBD1BiZ.png)
+
+### 8.2 请求参数与实体类封装
+- 创建封装请求参数的javabean, ** 并实现序列化的接口 **，具有get/set方法
+- 直接在Controller类中处理映射的方法的参数中增加该类型的参数即可：
+    ```java
+    // 保存用户，把数据封装到javabean的实例中
+    @RequestMapping("/saveaccount")
+    public String testParam(Account account){
+        System.out.println("saveaccount执行了");
+        System.out.println(account);
+        return "success";
+    }
+    ```
+### 8.3 复杂情况：请求参数绑定别的类的引用
+- 例如Account类中包含成员类型引用User：直接在表单中使用`user.age`即可
+    ```xml
+    <div>表单传递参数，封装到JavaBean</div>
+    <form action="/start/proj2/saveaccount" method="post" >
+        <%--属性名称要与实体类的变量名一致--%>
+        账号：<input type="text" name="username"/><br/>
+        密码：<input type="text" name="password"/><br/>
+        金额：<input type="text" name="money"/><br/>
+        用户姓名：<input type="text" name="user.uname"/><br/>
+        用户年龄：<input type="text" name="user.age"/><br/>
+        <input type="submit" value="提交"/><br/>
+    </form>
+    ```
+    
+    ```java
+    // 保存用户，把数据封装到javabean的实例中
+    @RequestMapping("/saveaccount")
+    public String testParam(Account account){
+        System.out.println("saveaccount执行了");
+        System.out.println(account);
+        System.out.println(account.getUser());
+        return "success";
+    }
+    ```
+### 8.4 解决中文乱码问题
+- post请求中文乱码（Tomcat版本造成的问题）
+- 可以在web.xml配置使用SpringMVC的过滤器：
+    ```xml
+         <!--配置解决中文乱码的过滤器-->
+         <filter>
+           <filter-name>characterEncodingFilter</filter-name>
+           <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+           <!--过滤器的初始化参数-->
+           <init-param>
+             <param-name>encoding</param-name>
+             <param-value>UTF-8</param-value>
+           </init-param>
+         </filter>
+         <filter-mapping>
+           <filter-name>characterEncodingFilter</filter-name>
+           <url-pattern>/*</url-pattern>
+         </filter-mapping>
+   ```
+
+### 8.5 请求参数绑定集合类型
+- JavaBean:
+    ```java
+    public class Account implements Serializable {
+        private String username;
+        private String password;
+        private Double money;
+    
+        // 集合的封装
+        private List<User> list;
+        private Map<String, User> map;
+        ...
+    }
+    ```
+- index.jsp:
+    ```xml
+    <div>表单传递参数，含有复杂类型（集合、Map）</div>
+    <form action="/start/proj2/saveaccount" method="post" >
+        <%--属性名称要与实体类的变量名一致--%>
+        账号：<input type="text" name="username"/><br/>
+        密码：<input type="text" name="password"/><br/>
+        金额：<input type="text" name="money"/><br/>
+            <%--封装到Account.list[0]位置--%>
+        list用户姓名：<input type="text" name="list[0].uname"/><br/>
+        list用户年龄：<input type="text" name="list[0].age"/><br/>
+            <%--封装到Account.map['one']位置--%>
+        map用户姓名：<input type="text" name="map['one'].uname"/><br/>
+        map用户年龄：<input type="text" name="map['one'].age"/><br/>
+        <input type="submit" value="提交"/><br/>
+    </form>
+    ```
+
+### 8.6 自定义类型转换器
+- 第一步：定义一个类，实现 Converter 接口，该接口有两个泛型。
+    - 实际开发中Spring中已有很多个类实现了Converter 接口，一般情况下我们直接在其中选择使用即可
+    - ![wYzpEZ4](https://i.imgur.com/wYzpEZ4.png)
+    - public interface Converter<S, T> : S表示Source, T表示Target
+        ```java
+        /**
+         * 把字符串转换为日期
+         */
+        public class StringToDateConverter implements Converter<String, Date> {
+        
+            @Override
+            public Date convert(String source) {
+                if (source == null){
+                    throw new RuntimeException("没有传入日期字符串");
+                }
+                DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+                try {
+                     return df.parse(source);
+                } catch (ParseException e) {
+                    throw new RuntimeException("输入的日期不是yyyy-MM-dd格式的");
+                }
+            }
+        }
+        ```
+- 第二步：在 spring 配置文件springmvc.xml中配置类型转换器。
+    ```xml
+        <!--配置类型转换器工厂-->
+        <bean id="conversionServiceFactoryBean" class="org.springframework.context.support.ConversionServiceFactoryBean">
+            <!--给工厂注入一个新的类型转换器 -->
+            <property name="converters" >
+                <set>
+                    <!-- 配置自定义类型转换器 -->
+                    <bean class="com.study.utils.StringToDateConverter"></bean>
+                </set>
+            </property>
+        </bean>
+    ```
+- 第三步：在 annotation-driven 标签中引用配置的类型转换服务 
+    ```xml
+    <!--开启SpringMVC框架的注解支持, -->
+    <mvc:annotation-driven conversion-service="conversionServiceFactoryBean"/>
+    ```
+- 最后，运行部署生效
+
+
+## 9 获取原生的Servlet API
+- 直接在处理请求的方法参数中加入需要的HttpServletRequest和HttpServletResponse对象参数即可
+    ```java
+        // Servlet原生API
+        @RequestMapping("/servlet")
+        public String testServlet(HttpServletRequest req, HttpServletResponse resp){
+            System.out.println("testServlet执行了");
+            System.out.println(req);
+            HttpSession session = req.getSession();
+            System.out.println(session);
+            ServletContext servletContext = session.getServletContext();
+            System.out.println(servletContext);
+            System.out.println(resp);
+            return "success";
+        }
+    ```
+
+
+
+
+
+
+
+
+
