@@ -27,7 +27,7 @@
         ${user1.username}
         ${user1.password}
     </body>
-    ```
+   ```
 
 ### 1.2 返回值是void
 - 之前的方法我们都返回一个"success"指向显示结果的jsp页面，那如果设置方法的返回值是void，程序会将其发送给哪一个jsp呢？——结果如下：
@@ -87,6 +87,9 @@
 
 > 重定向关键字与之前讲的一样不能访问WEB-INF目录下的文件
 
+- 异步响应与同步响应:
+    - ![tEXu5z6](https://i.imgur.com/tEXu5z6.png)
+
 ## 3 ResponseBody响应JSON数据
 - 需求：使用@ResponseBody注解实现将controller方法返回的对象转换为json响应给客户端。
 - 环境准备：
@@ -101,7 +104,8 @@
 - 目标:jsp页面使用Ajax向服务器端发送json数据，服务器端将json数据封装到一个javabean对象中
 
 > 只要前台传送给后端的数据的key与javaBean中的变量名一致，可以自动封装为实例。【需要引入jackson的jar包】
->> Jackson是一个简单基于Java应用库，Jackson可以轻松的将Java对象转换成json对象和xml文档，同样也可以将json、xml转换成Java对象。Jackson所依赖的jar包较少，简单易用并且性能也要相对高些，并且Jackson社区相对比较活跃，更新速度也比较快。
+>
+> > Jackson是一个简单基于Java应用库，Jackson可以轻松的将Java对象转换成json对象和xml文档，同样也可以将json、xml转换成Java对象。Jackson所依赖的jar包较少，简单易用并且性能也要相对高些，并且Jackson社区相对比较活跃，更新速度也比较快。
 
 - jackson的Maven坐标如下：
     ```xml
@@ -174,7 +178,7 @@
 - [jquery中ajax请求的使用和四个步骤示例 | 爱国足de博客](https://www.caizhichao.cn/967.html)
 - [【狂神说Java】一小时掌握Ajax_哔哩哔哩 (゜-゜)つロ 干杯~-bilibili](https://www.bilibili.com/video/BV1Kt411u7BV?from=search&seid=2546920281783366685)
 
-
+- [同步请求和异步请求的区别_Java_zzj552023965的博客-CSDN博客](https://blog.csdn.net/zzj552023965/article/details/62222666)
 
 
 
