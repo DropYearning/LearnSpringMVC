@@ -175,8 +175,40 @@ MyFilter1 doFilter 执行结束
     }
 ```
 
+## 7 拦截器和过滤器的区别
+
+（1）过滤器：
+
+- 依赖于servlet容器。在实现上基于函数回调，可以对几乎所有请求进行过滤，但是缺点是一个过滤器实例只能在容器初始化时调用一次。使用过滤器的目的是用来做一些过滤操作，获取我们想要获取的数据，比如：在过滤器中修改字符编码；在过滤器中修改HttpServletRequest的一些参数，包括：过滤低俗文字、危险字符等
+
+- 关于过滤器的一些用法可以参考这些[文章](http://www.07net01.com/2015/07/860262.html)：
+      - 继承HttpServletRequestWrapper以实现在Filter中修改HttpServletRequest的参数：https://www.zifangsky.cn/677.html
+
+      - 在SpringMVC中使用过滤器（Filter）过滤容易引发XSS的危险字符：https://www.zifangsky.cn/683.html
+
+（2）拦截器：
+
+- 依赖于web框架，在SpringMVC中就是依赖于SpringMVC框架。在实现上基于[Java](http://www.07net01.com/tags-Java-0.html)的反射机制，属于面向切面[编程](http://www.07net01.com/)（AOP）的一种运用。由于拦截器是基于web框架的调用，因此可以使用Spring的依赖注入（DI）进行一些业务操作，同时一个拦截器实例在一个controller生命周期之内可以多次调用。但是缺点是只能对controller请求进行拦截，对其他的一些比如直接访问静态资源的请求则没办法进行拦截处理
+
+- 关于过滤器的一些用法可以参考这些文章：
+      - 在SpringMVC中使用拦截器（interceptor）拦截CSRF攻击（修）：https://www.zifangsky.cn/671.html
+
+      - SpringMVC中使用Interceptor+[cookie](http://www.07net01.com/tags-cookie-0.html)实现在一定天数之内自动登录：https://www.zifangsky.cn/700.html
+
+![eYuPMJv](https://i.imgur.com/eYuPMJv.jpg)
+
+①拦截器是基于java的反射机制的，而过滤器是基于函数回调。
+②**拦截器不依赖与servlet容器，过滤器依赖与servlet容器**。
+③拦截器只能对action请求起作用，而过滤器则可以对几乎所有的请求起作用。
+④拦截器可以访问action上下文、值栈里的对象，而过滤器不能访问。
+⑤在action的生命周期中，拦截器可以多次被调用，而过滤器只能在容器初始化时被调用一次。
+
+⑥拦截器可以获取IOC容器中的各个bean，而过滤器就不行，这点很重要，在拦截器里注入一个service，可以调用业务逻辑。
+
+ 
 
 ## url-pattern写法细节
+
 -  `<url-pattern>/</url-pattern>`  会匹配到`/login`这样的路径型url，不会匹配到模式为`*.jsp`这样的后缀型url不会进入spring的DispatcherServlet类
 - `<url-pattern>/*</url-pattern>` 会匹配所有url：路径型的和后缀型的url(包括/login,*.jsp,*.js和*.html等). 会匹配*.jsp，导致进入spring的DispatcherServlet类，然后去寻找controller，接着找不到对应的controller所以报错。
 - `<url-pattern>*.do</url-pattern>` 会匹配到所有以`.do`结尾的的请求，一般可以用来进行模块的拦截。
@@ -186,6 +218,7 @@ MyFilter1 doFilter 执行结束
 - [拦截器和过滤器的区别 - THISISPAN - 博客园](https://www.cnblogs.com/panxuejun/p/7715917.html)
 - [Servlet/Filter 的生命周期_Servlet,filter_绿竹痕的博客-CSDN博客](https://blog.csdn.net/liwenjie001/article/details/8920977)
 - [过滤器中的chain.doFilter(request,response) - ooooevan - 博客园](https://www.cnblogs.com/ooooevan/p/5727798.html)
+- [拦截器和过滤器的区别 - THISISPAN - 博客园](https://www.cnblogs.com/panxuejun/p/7715917.html)
 
 
 
