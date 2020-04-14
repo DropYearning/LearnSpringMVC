@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+    <!--本xml配置的内容只是为了单独使用Mybatis，
+        若需要与Spring整合，需要在Spring的核心配置文件中进一步设置，
+        并替代本文件
+    -->
+<configuration>
+    <!--配置MySQL连接-->
+    <environments default="mysql">
+        <environment id="mysql">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="com.mysql.cj.jdbc.Driver"/>
+                <property name="url" value="jdbc:mysql:///ssm"/>
+                <property name="username" value="root"/>
+                <property name="password" value="12345678"/>
+            </dataSource>
+        </environment>
+    </environments>
+
+    <!--引入映射配置扫描的包-->
+    <mappers>
+        <package name="com.study.dao"/>
+    </mappers>
+</configuration>
