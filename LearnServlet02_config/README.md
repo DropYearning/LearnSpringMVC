@@ -32,6 +32,7 @@ public class ServletConfigDemo1 extends HttpServlet {
     }
 }
 ```
+![fz21hQ](https://gitee.com/pxqp9W/testmarkdown/raw/master/imgs/2021/03/fz21hQ.png)
 
 
 ### 1.2 方法二：调用父类GenericServlet中的getInitParameter()方法
@@ -107,8 +108,8 @@ protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws Se
 ```
 
 ### 2.3 ServletContext作用3：获取资源路径
+![dTzGpv](https://gitee.com/pxqp9W/testmarkdown/raw/master/imgs/2021/03/dTzGpv.png)
 - String  getRealPath(String path); //根据资源名称得到资源的绝对路径.
-- ![63bV3a1](https://i.imgur.com/63bV3a1.png)
     - `String path = this.getServletContext().getRealPath("/WEB-INF/a.properties");`
     - `String path = this.getServletContext().getRealPath("/WEB-INF/classes/b.properties");`
     - `String path = this.getServletContext().getRealPath("/WEB-INF/classes/com/study/servlet/c.properties");`
@@ -164,7 +165,7 @@ public class ServletContextForward extends HttpServlet {...}
       String[] urlPatterns() default {};
       int loadOnStartup() default -1;
 ```
-    - 这个注解可以看到，@Target({ElementType.TYPE})作用范围为类上,@Retention(RetentionPolicy.RUNTIME)保留在运行期，name()方法反而在这里没有那么重要，因为在web.xml中，name主要起一个关联的作用，其中我们最重要的就是这个String[] urlPatterns() default {};配置一个地址，它的定义为一个数组，当然配置一个也是可以的，即urlPatterns = "/Demo2"而其中value所代表的最重要的值，其实也就代表这个地址，所以可以写为 Value = "/Demo2" ，而 Value又可以省略，所以可以写成 "/Demo2"
+- 这个注解可以看到，@Target({ElementType.TYPE})作用范围为类上,@Retention(RetentionPolicy.RUNTIME)保留在运行期，name()方法反而在这里没有那么重要，因为在web.xml中，name主要起一个关联的作用，其中我们最重要的就是这个String[] urlPatterns() default {};配置一个地址，它的定义为一个数组，当然配置一个也是可以的，即urlPatterns = "/Demo2"而其中value所代表的最重要的值，其实也就代表这个地址，所以可以写为 Value = "/Demo2" ，而 Value又可以省略，所以可以写成 "/Demo2"
 
 ## 4 Servlet相关类的关系整理
 - ![mChFg8I](https://i.imgur.com/mChFg8I.png)
