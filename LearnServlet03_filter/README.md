@@ -36,6 +36,31 @@
     ```
 ## 3 过滤器效果演示
 - 设置两个过滤器，Filter1拦截/*，Filter2拦截*.do
+
+```xml
+<!--配置过滤器-->
+<filter>
+	<filter-name>myFilter</filter-name>
+	<filter-class>com.study.filter.MyFilter</filter-class>
+</filter>
+<filter-mapping>
+	<filter-name>myFilter</filter-name>
+	<!--/*表示会匹配所有url：路径型的和后缀型的url(包括/login,*.jsp,*.js和*.html等)-->
+	<url-pattern>/*</url-pattern>
+</filter-mapping>
+
+<!--配置过滤器-->
+<filter>
+	<filter-name>myFilter2</filter-name>
+	<filter-class>com.study.filter.MyFilter2</filter-class>
+</filter>
+	<filter-mapping>
+	<filter-name>myFilter2</filter-name>
+	<!--过滤.do结果的请求-->
+	<url-pattern>*.do</url-pattern>
+</filter-mapping>
+```
+
 - Filter1:
     ```java
     public class MyFilter implements Filter {
@@ -126,7 +151,7 @@ MyFilter1 doFilter 执行结束
 - Filter1和2都放行之后，Servlet中的service()方法被调用，service()执行完毕之后response再经过一次Filter2和1,最后本次请求处理的流程结束
 
 ### 3.4 总结
-- 无论过滤器是否放行，Servlet的对象示例都会在我们点击URL的时刻立即被服务器创建
+- 无论过滤器是否放行，Servlet的对象实例都会在我们点击URL的时刻立即被服务器创建
 - Servlet中的service()方法是否执行，要看之前的过滤器是否都放行了
 - 过滤器的调用是栈式的
 
@@ -196,7 +221,7 @@ MyFilter1 doFilter 执行结束
       - SpringMVC中使用Interceptor+[cookie](http://www.07net01.com/tags-cookie-0.html)实现在一定天数之内自动登录：https://www.zifangsky.cn/700.html
 
 ![eYuPMJv](https://i.imgur.com/eYuPMJv.jpg)
-
+![95RKyj](https://gitee.com/pxqp9W/testmarkdown/raw/master/imgs/2021/03/95RKyj.jpg)
 ①拦截器是基于java的反射机制的，而过滤器是基于函数回调。
 ②**拦截器不依赖与servlet容器，过滤器依赖与servlet容器**。
 ③拦截器只能对action请求起作用，而过滤器则可以对几乎所有的请求起作用。
