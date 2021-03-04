@@ -28,24 +28,65 @@
 
 ### 2.1 编写一个servlet程序
 - a、写一个java类，实现servlet接口，需要实现接口下面的五个方法【init(), destroy(), getServletInfo(), ServletConfig(), service(...)】.[可以把实现了servlet接口的类看作是一个servlet小程序]
-    
     - 其实service()是服务方法，向模板页面发送数据
+```java
+/**
+ * 实现javax.servlet.Servlet接口创建Servlet
+ */
+public class ServletDemo1 implements Servlet {
+
+    // 手动覆盖Servlet生命周期的实例化方法
+    public ServletDemo1() {
+        System.out.println("ServletDemo1实例化");
+    }
+
+    // 初始化
+    @Override
+    public void init(ServletConfig servletConfig) throws ServletException {
+        System.out.println("ServletDemo1 init()");
+    }
+
+    // servlet可以使用这个方法得到任何启动信息
+    @Override
+    public ServletConfig getServletConfig() {
+        return null;
+    }
+
+    // 服务方法
+    @Override
+    public void service(ServletRequest servletRequest, ServletResponse servletResponse) throws ServletException, IOException {
+        System.out.println("hello servlet");
+    }
+
+    // 允许servlet返回有关其自身的基本信息
+    @Override
+    public String getServletInfo() {
+        return null;
+    }
+
+    // 销毁方法
+    @Override
+    public void destroy() {
+        System.out.println("ServletDemo1 destroy()");
+    }
+}
+```
     
 - b、修改web.xml文件，给servlet提供一个可访问的URI地址
-        ```xml
-        <!--创建一个servlet实例-->
-        <servlet>
-            <servlet-name>servletDemo1</servlet-name>
-            <servlet-class>com.study.servlet.ServletDemo1</servlet-class>
-        </servlet>
-    
-        <!--给之前创建过的servlet实例提供一个可供客户端访问的url映射-->
-        <servlet-mapping>
-            <servlet-name>servletDemo1</servlet-name>
-            <!--匹配模式 http:localhost:8080/myapp/demo1-->
-            <url-pattern>/demo1</url-pattern>
-        </servlet-mapping>
-        ```
+    ```xml
+    <!--创建一个servlet实例-->
+    <servlet>
+        <servlet-name>servletDemo1</servlet-name>
+        <servlet-class>com.study.servlet.ServletDemo1</servlet-class>
+    </servlet>
+
+    <!--给之前创建过的servlet实例提供一个可供客户端访问的url映射-->
+    <servlet-mapping>
+        <servlet-name>servletDemo1</servlet-name>
+        <!--匹配模式 http:localhost:8080/myapp/demo1-->
+        <url-pattern>/demo1</url-pattern>
+    </servlet-mapping>
+    ```
     - 映射细节1：支持配置多个映射路径到同一个servlet中：
         - ![SJmezkg](https://i.imgur.com/SJmezkg.png)
     - 映射细节2： 通配符*代表任意字符串
