@@ -16,6 +16,8 @@
         return "success";
     }
 ```
+![KVyBVQ](https://gitee.com/pxqp9W/testmarkdown/raw/master/imgs/2021/03/KVyBVQ.png)
+
 ## 2 @RequestBody
 - 位置：加在方法的参数名称前{ElementType.PARAMETER}
 - 作用：用于**获取请求体的整个内容**。直接使用得到是 key=value&key=value...结构的数据。get
@@ -35,7 +37,7 @@
 
 ## 3 @PathVariable
 - 作用：用于绑定 url 中的**占位符**。
-    - 例如：请求 url 中 /delete/{id}，这个{id}就是 url 占位符。url 支持占位符是 spring3.0 之后加入的。是 springmvc 支持 rest 风格 URL 的一个重要标志。
+    - 例如：请求 url 中 `/delete/{id}`，这个{id}就是 url 占位符。url 支持占位符是 spring3.0 之后加入的。是 springmvc 支持 rest 风格 URL 的一个重要标志。
 - 属性：
     - value：用于指定 url 中占位符名称。
     - required：是否必须提供占位符。
@@ -90,6 +92,16 @@
 - 属性：
   - value：指定 cookie 的名称。
   - required：是否必须有此 cookie。
+```java
+// 测试@CookieValue
+@RequestMapping("/testCookieValue")
+public String testCookieValue(@CookieValue(value = "JSESSIONID") String cookieValue){
+    System.out.println("testCookieValue");
+    System.out.println(cookieValue);
+    return "success";
+}
+```
+![cc6yFD](https://gitee.com/pxqp9W/testmarkdown/raw/master/imgs/2021/03/cc6yFD.png)
 
 ## 6 @ModelAttribute
 > @ModelAttribute注解顾名思义就是在MVC中Model一级的属性。
@@ -127,6 +139,8 @@
               return "success";
           }
     ```
+![Nsx7jU](https://gitee.com/pxqp9W/testmarkdown/raw/master/imgs/2021/03/Nsx7jU.png)
+
     
 ### 6.1 ModelAttribute基于Map的应用场景示例 ：
 ```java
@@ -212,7 +226,6 @@ public String testModelAttribute(@ModelAttribute("abc") User user){
      }
     }
     ```
-- 
 
 
 
