@@ -198,6 +198,7 @@ class="org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolv
     - method：用于指定请求的方式。
     - params：用于指定限制请求参数的条件。它支持简单的表达式。要求请求参数的key和value必须和配置的一模一样
         - 例如：params = {"accountName"}，表示请求参数必须有 accountName；params = {"moeny!100"}，表示请求参数中 money 不能是 100;params = {"moeny=100"}，表示请求参数中 money 只能是 100
+
     — headers：用于指定限制请求消息头的条件，请求头中必须含有某些字段
 
 ## 8 请求参数的绑定
@@ -306,7 +307,8 @@ class="org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolv
     ```
 
 ### 8.6 自定义类型转换器
-- 第一步：定义一个类，实现 Converter 接口，该接口有两个泛型。
+![uN8OTK](https://gitee.com/pxqp9W/testmarkdown/raw/master/imgs/2021/03/uN8OTK.png)
+- 第一步：定义一个类，实现 Converter 接口，该接口有两个泛型。`public interface Converter<S, T> `: S表示Source, T表示Target
     - 实际开发中Spring中已有很多个类实现了Converter 接口，一般情况下我们直接在其中选择使用即可
     - ![wYzpEZ4](https://i.imgur.com/wYzpEZ4.png)
     - public interface Converter<S, T> : S表示Source, T表示Target
@@ -330,7 +332,9 @@ class="org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolv
             }
         }
         ```
-- 第二步：在 spring 配置文件springmvc.xml中配置类型转换器。
+- 第二步：在 spring 配置文件springmvc.xml中配置类型转换器。创建一个`SpringFramework的ConversionServiceFactoryBean`实例交由Spring容器管理，并将自定义的类型转换器注入其中。
+![6BWcwO](https://gitee.com/pxqp9W/testmarkdown/raw/master/imgs/2021/03/6BWcwO.png)
+
     ```xml
         <!--配置类型转换器工厂-->
         <bean id="conversionServiceFactoryBean" class="org.springframework.context.support.ConversionServiceFactoryBean">
@@ -352,6 +356,7 @@ class="org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolv
 
 
 ## 9 获取原生的Servlet API
+SpringMVC 还支持使用原始 ServletAPI 对象作为传入控制器方法的参数。
 - 直接在处理请求的方法参数中加入需要的HttpServletRequest和HttpServletResponse对象参数即可
     ```java
         // Servlet原生API
