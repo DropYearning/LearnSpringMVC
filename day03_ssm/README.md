@@ -1,6 +1,6 @@
 # LearnSpringMVC-day3-SSM框架整合例子
 [SpringMVC教程IDEA版哔哩哔哩 (゜-゜)つロ 干杯~-bilibili](https://www.bilibili.com/video/BV1Sb411s7qa?from=search&seid=12129021327363557187)
-
+整合思路：使用Spring Framework去整合其他框架。先保证其他框架能够正常工作，再考虑整合。
 - ![f37O9ra](https://i.imgur.com/f37O9ra.png)
 ## 配置文件梳理
 - `/WEB-INF/web.xml`: Java Web项目中的web.xml文件是用来初始化工程配置信息的。我们主要**用它来配置Servlet、过滤器、监听器**
@@ -290,7 +290,8 @@
 ## 三、整合 Spring 和 SpringMVC
 - 目前Spring容器的配置文件applicationContext还没有被加载
     - ![qqIfNYj](https://i.imgur.com/qqIfNYj.png)
-- 在`web.xml`中配置监听器实现启动服务器时根据`applicationContext`配置文件来创建Spring容器:
+- 在`web.xml`中配置`org.springframework.web.context.ContextLoaderListener`监听器实现启动服务器时根据`applicationContext`配置文件来创建Spring容器:
+    - 默认只加载WEF-INF目录下的applicationContext.xml文件。若SpringFramework的配置文件不在该目录下需要再在web.xml中添加一个全局的Spring配置文件路径参数。 
     ```xml
       <!--配置加载Spring配置文件用的监听器, 默认只加载WEF-INF目录下的applicationContext.xml文件-->
       <listener>
@@ -386,6 +387,7 @@
     }
     ```
 ## 五、整合Spring和Mybatis
+- 我们之前单独学习Mybatis的框架的时候，只写到Dao接口那一层，并在Junit单元测试中每次都new一次SqlSessionFactory、SqlSession和IUserDao对象。而在实际的整合开发中，Mybatis框架帮我们从接口中创建出来的代理对象也是需要交给Spring容器管理的，下面我们就需要做相应配置，让Spring容器可以管理Mybatis创建出的Dao接口代理对象。
 - 在单独使用Mybatis测试方法的时候，我们是提供工厂获取到SqlSession，再通过SqlSession获取到Dao接口的代理对象。此时我们的业务层AccountService中的方法仍然只是模拟运行的，**我们希望通过Sping框架，将Dao接口的代理实现对象注入到AccountService方法中，这样我们的AccountService就能真正起到数据库操作的作用**
 - 1、把SqlMapConfig.xml配置文件中的内容配置到applicationContext.xml配置文件中：让Spring 接管 MyBatis 的 Session 工厂
     - **整合后我们不再需要单独的Mybatis配置文件SqlMapConfig.xml**
@@ -455,6 +457,8 @@
         </c:forEach>
     </body>
     ```
+![oUYxlh](https://gitee.com/pxqp9W/testmarkdown/raw/master/imgs/2021/03/oUYxlh.png)
+
 ## 六、Spring整合Mybatis后的事务配置
 - 1、在在Spring配置文件applicationContext.xml中配置**声明式事务管理**：
     ```xml
