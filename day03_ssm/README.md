@@ -498,8 +498,186 @@
     </form>
    ```
 
+## 整合SSM框架中的配置文件说明
+- `webapp/WEB-INF/web/xml`： 用于对JAVA WEB项目进行配置与Servlet相关的项。我们可能需要在其中配置：
+    -  SringMVC的前端控制器`DispatcherServlet`，它本质上是一个Servlet，因此在这里配置
+    -  用于解决中文乱码的过滤器`CharacterEncodingFilter`，属于Servlet容器中的过滤器，因此在此处配置
+    -  因为本项目是Web项目与Spring项目的结合，因此在web.xml中还需要配置一个`ContextLoaderListener`，它本质上是一个监听器，用于加载Spring Framework的配置文件
+    -  在<context-param>全局参数中配置Spring Framework的全局配置文件路径`contextConfigLocation`
+    ```xml
+    <!DOCTYPE web-app PUBLIC
+     "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+     "http://java.sun.com/dtd/web-app_2_3.dtd" >
 
+    <web-app>
+      <display-name>Archetype Created Web Application</display-name>
+      <!--配置加载Spring配置文件用的监听器, 默认只加载WEF-INF目录下的applicationContext.xml文件-->
+      <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+      </listener>
+      <!--设Spring置配置文件的路径-->
+      <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath:applicationContext.xml</param-value>
+      </context-param>
 
+      <!--配置前端控制器-->
+      <servlet>
+        <servlet-name>dispatcherServlet</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <!--加载springmvc.xml的配置文件-->
+        <init-param>
+          <param-name>contextConfigLocation</param-name>
+          <param-value>classpath:springmvc.xml</param-value>
+        </init-param>
+        <!--一启动服务器就创建该servlet-->
+        <load-on-startup>1</load-on-startup>
+      </servlet>
+      <servlet-mapping>
+        <servlet-name>dispatcherServlet</servlet-name>
+        <url-pattern>/</url-pattern>
+      </servlet-mapping>
+
+      <!--解决中文乱码的过滤器-->
+      <filter>
+        <filter-name>characterEncodingFilter</filter-name>
+        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+        <init-param>
+          <param-name>encoding</param-name>
+          <param-value>UTF-8</param-value>
+        </init-param>
+      </filter>
+      <filter-mapping>
+        <filter-name>characterEncodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+      </filter-mapping>
+
+    </web-app>
+    ```
+- `SqlMapConfig`(有的项目也叫`mybatis-config.xml`)： Mybatis的主配置文件。在其中配置<environments>与<mappers>
+    ```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE configuration
+            PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+            "http://mybatis.org/dtd/mybatis-3-config.dtd">
+        <!--本xml配置的内容只是为了单独使用Mybatis，
+            若需要与Spring整合，需要在Spring的核心配置文件中进一步设置，
+            并替代本文件
+        -->
+    <configuration>
+        <!--配置MySQL连接-->
+        <environments default="mysql">
+            <environment id="mysql">
+                <transactionManager type="JDBC"/>
+                <dataSource type="POOLED">
+                    <property name="driver" value="com.mysql.cj.jdbc.Driver"/>
+                    <property name="url" value="jdbc:mysql:///ssm"/>
+                    <property name="username" value="root"/>
+                    <property name="password" value="12345678"/>
+                </dataSource>
+            </environment>
+        </environments>
+
+        <!--引入映射配置扫描的包-->
+        <mappers>
+            <package name="com.study.dao"/>
+        </mappers>
+    </configuration>
+    ```
+- `springmvc.xml`：Spring MVC的配置文件。我们需要在其中配置SpringMVC中的各种“器”：例如视图解析器、类型转换器等。
+    ```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <beans xmlns="http://www.springframework.org/schema/beans"
+           xmlns:mvc="http://www.springframework.org/schema/mvc"
+           xmlns:context="http://www.springframework.org/schema/context"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="
+            http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd">
+
+        <!--开启注解扫描：只扫描MVC中的controller -->
+        <context:component-scan base-package="com.study">
+            <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+        </context:component-scan>
+
+        <!--配置视图解析器-->
+        <bean id="internalResourceViewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+            <property name="prefix" value="/WEB-INF/pages/"></property>
+            <property name="suffix" value=".jsp"></property>
+        </bean>
+
+        <!--配置不过滤静态资源-->
+        <mvc:resources location="/css/" mapping="/css/**" />
+        <mvc:resources location="/images/" mapping="/images/**" />
+        <mvc:resources location="/js/" mapping="/js/**" />
+
+        <!--开启SpringMVC注解支持-->
+        <mvc:annotation-driven />
+
+    </beans>    
+    ```
+- `applicationContext.xml`： Spring Framework的核心配置文件。我们需要在其中配置需要交给Spring容器管理的Bean和Spring事务管理相关的事宜。
+    ```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <beans xmlns="http://www.springframework.org/schema/beans"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:context="http://www.springframework.org/schema/context"
+           xmlns:aop="http://www.springframework.org/schema/aop"
+           xmlns:tx="http://www.springframework.org/schema/tx"
+           xsi:schemaLocation="http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context
+            http://www.springframework.org/schema/context/spring-context.xsd
+            http://www.springframework.org/schema/aop
+            http://www.springframework.org/schema/aop/spring-aop.xsd
+            http://www.springframework.org/schema/tx
+            http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+        <!--开启Spring注解扫描, 只希望Spring管理service和dao-->
+        <context:component-scan base-package="com.study">
+            <!--配置哪些注解不扫描-->
+            <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+        </context:component-scan>
+
+        <!--Spring整合Mybatis-->
+            <!--1 配置出c3p0连接池-->
+        <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+            <property name="driverClass" value="com.mysql.cj.jdbc.Driver"></property>
+            <property name="jdbcUrl" value="jdbc:mysql:///ssm"></property>
+            <property name="user" value="root"></property>
+            <property name="password" value="12345678"></property>
+         </bean>
+            <!--2 配置SqlSession工厂-->
+        <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+            <property name="dataSource" ref="dataSource"/>
+        </bean>
+            <!--3 配置AccountDao接口所在的包，让Spring容器存入这些类的代理对象-->
+        <bean id="mapperScanner" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+            <property name="basePackage" value="com.study.dao"></property>
+        </bean>
+
+        <!--配置Spring框架的声明式事务管理-->
+        <!--1、配置事务管理器-->
+        <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+            <property name="dataSource" ref="dataSource"></property>
+        </bean>
+        <!--2、配置事务的通知-->
+        <tx:advice id="txAdvice" transaction-manager="txManager">
+            <tx:attributes>
+                <tx:method name="find*" read-only="true"/>
+                <tx:method name="save*" isolation="DEFAULT"/>
+            </tx:attributes>
+        </tx:advice>
+        <!--3、配置AOP增强-->
+        <aop:config>
+            <aop:advisor advice-ref="txAdvice" pointcut="execution(* com.study.service.impl.*.*(..))"/>
+        </aop:config>
+    </beans>
+    ```
 
 ## 参考资料
 - [关于web.xml配置的那些事儿 - 个人文章 - SegmentFault 思否](https://segmentfault.com/a/1190000011404088)
