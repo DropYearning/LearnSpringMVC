@@ -80,8 +80,44 @@
 ### 1.3 返回值是ModelAndView对象
 - ModelAndView 是 SpringMVC 为我们提供的一个对象，该对象也可以用作控制器方法的返回值
 - 1.1中直接返回String类型的方法底层也是使用ModelAndView对象完成的
+```java
+    @RequestMapping("/testModelAndView")
+    // testModelAndView方法的返回值是ModelAndView
+    public ModelAndView testModelAndView() {
+        // 创建一个ModelAndView对象
+        ModelAndView mv = new ModelAndView();
+        System.out.println("testModelAndView方法执行了");
+        // 模拟从数据库中查询出用户对象
+        User user = new User();
+        user.setUsername("花花");
+        user.setAge(20);
+        user.setPassword("123456");
+        // 将user对象存储到mv中，mv底层也会将user存储在request域中
+        mv.addObject("user", user);
+        // 设置跳转至哪一个页面
+        mv.setViewName("success"); // 让视图解析器找到success.jsp
+        return mv;
+    }
+```
+```jsp
+<%@ page contentType="text/html;charset=UTF-8" language="java" isELIgnored="false" %>
+<html>
+    <head>
+        <title>成功页面</title>
+    </head>
+    <body>
+        <h3>执行成功了</h3>
+        <h3>跳转到了/WEB-INF/pages/success.jsp</h3>
+        ${user.username}
+        ${user.password}
+    </body>
+</html>
+```
+![ro8wfr](https://gitee.com/pxqp9W/testmarkdown/raw/master/imgs/2021/03/ro8wfr.png)
+
 
 ## 2 转发或重定向
+对于标注了`@Controller`的类中带有`@RequestMapping`注解的方法，若方法的返回值是String，也可以不通过试图解析器，直接通过返回带有`forward`或者`redirect`的字符串，就可以实现转发或者重定向的功能。
 - 转发：`return "forward:/WEB-INF/pages/success.jsp";`
 - 重定向：`return "redirect:/response.jsp";`
 
@@ -90,7 +126,8 @@
 - 异步响应与同步响应:
     - ![tEXu5z6](https://i.imgur.com/tEXu5z6.png)
 
-## 3 ResponseBody响应JSON数据
+## 3 `@ResponseBody`响应JSON数据
+- `@ResponseBody`: @responseBody注解的作用是将controller的方法返回的对象通过适当的转换器转换为指定的格式之后，写入到response对象的body区，通常用来直接返回JSON数据或者是XML数据。
 - 需求：使用@ResponseBody注解实现将controller方法返回的对象转换为json响应给客户端。
 - 环境准备：
     - 1、在springmvc.xml中配置前端控制器不去拦截静态资源
@@ -100,32 +137,31 @@
         <mvc:resources location="/images/" mapping="/images/**"/> <!-- 图片 -->
         <mvc:resources location="/js/" mapping="/js/**"/> <!-- javascript -->
         ```
-    - 2、在jsp页面中引入jquery.js：`<script src="js/jquery.min.js" ></script>`
-- 目标:jsp页面使用Ajax向服务器端发送json数据，服务器端将json数据封装到一个javabean对象中
+    - 2、在jsp页面中引入jquery.js：`<script src="js/jquery.min.js" ></script>`。jsp页面使用Ajax向服务器端发送json数据，服务器端将json数据封装到一个javabean对象中
+    - 3、Springmvc 默认用 MappingJacksonHttpMessageConverter 对 json 数据进行转换，需要加入jackson 的包。
+        > 只要前台传送给后端的数据的key与javaBean中的变量名一致，可以自动封装为实例。【需要引入jackson的jar包】
+        >
+        > > Jackson是一个简单基于Java应用库，Jackson可以轻松的将Java对象转换成json对象和xml文档，同样也可以将json、xml转换成Java对象。Jackson所依赖的jar包较少，简单易用并且性能也要相对高些，并且Jackson社区相对比较活跃，更新速度也比较快。
 
-> 只要前台传送给后端的数据的key与javaBean中的变量名一致，可以自动封装为实例。【需要引入jackson的jar包】
->
-> > Jackson是一个简单基于Java应用库，Jackson可以轻松的将Java对象转换成json对象和xml文档，同样也可以将json、xml转换成Java对象。Jackson所依赖的jar包较少，简单易用并且性能也要相对高些，并且Jackson社区相对比较活跃，更新速度也比较快。
-
-- jackson的Maven坐标如下：
-    ```xml
-    <!--引入jackson来转换Javabean与json/xml-->
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>2.9.0</version>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-      <version>2.9.0</version>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
-      <version>2.9.0</version>
-    </dependency>
-    ```
+        - jackson的Maven坐标如下：
+            ```xml
+            <!--引入jackson来转换Javabean与json/xml-->
+            <dependency>
+              <groupId>com.fasterxml.jackson.core</groupId>
+              <artifactId>jackson-databind</artifactId>
+              <version>2.9.0</version>
+            </dependency>
+            <dependency>
+              <groupId>com.fasterxml.jackson.core</groupId>
+              <artifactId>jackson-core</artifactId>
+              <version>2.9.0</version>
+            </dependency>
+            <dependency>
+              <groupId>com.fasterxml.jackson.core</groupId>
+              <artifactId>jackson-annotations</artifactId>
+              <version>2.9.0</version>
+            </dependency>
+            ```
 - 控制器代码如下：
     ```java
         // 模拟Ajax异步请求和响应请求
