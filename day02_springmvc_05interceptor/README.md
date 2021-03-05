@@ -10,16 +10,19 @@
 - SpringMVC拦截器与Servlet过滤器的区别：
     - 过滤器是 servlet 规范中的一部分，任何 java web 工程都可以使用。
     - 拦截器是 SpringMVC 框架自己的，只有使用了 SpringMVC 框架的工程才能用。
-    - 过滤器在 url-pattern 中配置了/*之后，可以对所有要访问的资源拦截。
+    - **过滤器在 url-pattern 中配置了/*之后，可以对所有要访问的资源拦截。**
     - **拦截器只会拦截访问的控制器方法，如果访问的是 jsp，html,css,image 或者js是不会进行拦截的**。
     - 可以认为拦截器能做的事情过滤器都能做，但过滤器能做的拦截器不一定能做
 - **拦截器也是AOP思想的具体应用**
 
-## 2 使用拦截器
+## 2 实现自定义拦截器【实现：HandlerInterceptor接口。】
 - 1、 编写一个普通类实现 HandlerInterceptor 接口 ，可以选择性地实现其中的preHandle、postHandle、afterCompletion三个方法
-    - preHandle：预处理，在controller方法执行前执行
-    - postHandle：后处理方法，在controller方法执行后执行, 在跳转到success.jsp执行之前执行
-    - afterCompletion：在success.jsp页面执行后，这个方法会执行
+    - **preHandle**：预处理，在controller方法执行前执行。return true表示放行，执行下一个拦截器，若没有就执行controller方法；return false表示不放行，可以利用req和resp跳转到相应的反馈页面。
+        - preHandle()方法只要配置了都会被调用。 
+    - **postHandle**：后处理方法，在controller方法执行后执行, 在跳转到success.jsp执行之前执行
+        - postHandle()方法只在拦截器链内所有拦截器都返回true（放行）后，在controller方法执行后，才会被调用
+    - **afterCompletion**：在success.jsp页面执行后，这个方法会执行
+        - 只有该拦截器对应的preHandle()方法返回true时，该拦截器的afterCompletion()方法才在跳转jsp页面之后被调用。
     - 若不放行，可以进行页面跳转： `request.getRequestDispatcher("/WEB-INF/pages/error.jsp").forward(request, response);`
    ```java
     /**
@@ -52,14 +55,54 @@
         }
     }
     ```
+    
+    ```java
+    /**
+ * 自定义拦截器2
+ */
+public class MyInterceptor2 implements HandlerInterceptor {
+
+    // 预处理，在controller方法执行前执行
+    // return true表示放行，执行下一个拦截器，若没有就执行controller方法
+    // return false表示不放行，可以利用req和resp
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        System.out.println("MyInterceptor2 preHandle");
+        //request.getRequestDispatcher("/WEB-INF/pages/error.jsp").forward(request, response);
+        return true;
+    }
+
+
+    // 后处理方法，在controller方法执行后执行, 在success.jsp执行之前执行
+    @Override
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+        System.out.println("MyInterceptor2 postHandle");
+        //request.getRequestDispatcher("/WEB-INF/pages/error.jsp").forward(request, response);
+    }
+
+
+    // 在success.jsp页面执行后，这个方法会执行
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+        System.out.println("MyInterceptor2 afterCompletion");
+    }
+}
+    ```
 - 2、在springmvc.xml中声明拦截器
     ```xml
-    <!-- 配置拦截器 -->
+    <!--配置拦截器-->
     <mvc:interceptors>
         <mvc:interceptor>
+            <!--要拦截的请求url-->
+            <mvc:mapping path="/proj1/*"/>
+            <!--不拦截的请求url(与上面的配置一个即可)-->
+<!--            <mvc:exclude-mapping path=""/>-->
+            <bean class="com.study.interceptor.MyInterceptor1"></bean>
+        </mvc:interceptor>
+        <mvc:interceptor>
+            <!--要拦截的请求url-->
             <mvc:mapping path="/**"/>
-            <bean id="handlerInterceptorDemo1"
-            class="com.itheima.web.interceptor.HandlerInterceptorDemo1"></bean>
+            <bean class="com.study.interceptor.MyInterceptor2"></bean>
         </mvc:interceptor>
     </mvc:interceptors>
     ```
@@ -69,9 +112,12 @@
     [2020-04-13 10:40:16,738] Artifact day02_springmvc_05interceptor:war exploded: Deploy took 2,038 milliseconds
     (点击拦截器url)
     MyInterceptor1 preHandle
+    MyInterceptor2 preHandle
     testInterceptor 方法执行了
+    MyInterceptor2 postHandle
     MyInterceptor1 postHandle
     success.jsp执行了...
+    MyInterceptor2 afterCompletion
     MyInterceptor1 afterCompletion
     ```
 
@@ -82,11 +128,15 @@
 - `<mvc:mapping path="/proj1/*"/> `表示拦截http://localhost:8080/day02/proj1/* 【day02是AppContext】
     
 ### 3.2 拦截器的执行顺序
-- 若在xml中配置了多个可以拦截相同url的拦截器，执行顺序按xml中的配置顺序
+- 若在xml中配置了多个可以拦截相同url的拦截器，preHandle()方法执行顺序按xml中的配置顺序依次拦截执行。
+- postHandle()和afterCompletion()方法：按拦截器定义逆序调用
 - ![b0SBFvm](https://i.imgur.com/b0SBFvm.png)
+- 如果有多个拦截器，这时拦截器 1 的 preHandle 方法返回 true，但是拦截器 2 的 preHandle 方法返回 false，而此时拦截器 1 的 afterCompletion 方法是否执行？—— 会执行。（因为拦截器1的preHandle是放行的，因此不管拦截器2是否放行，拦截器1的afterCompletion()方法一定会在跳转jsp页面之后被执行，但是拦截器1的postHandle()是否能执行要看其他拦截器是否全部放行）
+
+![rp18zm](https://gitee.com/pxqp9W/testmarkdown/raw/master/imgs/2021/03/rp18zm.png)
 
 
-## 4 拦截器的应用（验证用户是否登录）
+## 4 拦截器的应用（验证用户是否登录，若用户未登录，则跳转到登录页面）
 
 ### 4.1 实现思路
 - 1、有一个登录页面，需要写一个 controller 访问页面
@@ -134,8 +184,8 @@ public class LoginInterceptor implements HandlerInterceptor{
         return true;
     }
     HttpSession session = request.getSession();
-    //如果用户已登录也放行
-    if(session.getAttribute("user")!=null){
+    //如果用户已登录则放行
+    if(session.getAttribute("activeUser")!=null){
         return true;
     }
     //用户没有登录挑战到登录页面
